@@ -5,7 +5,7 @@ python版本  2.7
 在Win7下测试，没啥大问题
 
 
-配置文件为config.txt，按照json格式存储。
+配置文件为config.json，按照json格式存储。
 websites          要扫描的站点列表
 dic_folder        字典文件存放目录，扫描时会使用此目录下的所有字典
 thread_num        扫描时所开启的线程数
