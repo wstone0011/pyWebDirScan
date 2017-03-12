@@ -1,6 +1,2 @@
 # pyWebDirScan
-Web目录扫描
-
-http://bbs.pediy.com/showthread.php?t=201427
-
-test_branch test
+Web目录扫描，字典用的御剑的字典。
