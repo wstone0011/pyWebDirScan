@@ -2,5 +2,5 @@
     "websites" : "websites.txt",
     "dic_folder" : "dic",
     "request_method" : "HEAD",
-    "thread_num" : "16"
+    "thread_num" : 16
 }

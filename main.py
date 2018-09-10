@@ -1,4 +1,6 @@
-#-*- coding: utf8 -*-
+#encoding:utf8
+import sys
+reload(sys); sys.setdefaultencoding('utf8')
 import os
 import time
 import logging
@@ -6,19 +8,31 @@ import json
 from Worker import *
 
 cur_time = time.strftime( '%Y-%m-%d %X', time.localtime( time.time() ) ).replace(':','').replace(' ','_')
-log_file = os.getcwd()+'./log/myapp'+cur_time+'.log'
+log_file = './log/myapp'+cur_time+'.log'
 
+'''
+{
+    "websites" : "websites.txt",
+    "dic_folder" : "dic",
+    "request_method" : "HEAD",
+    "thread_num" : "16"
+}
+'''
 class Manager(object):
+    cfg = None
+    
     def __init__(self):
         try:
             self.logger_init()
-            cfg = self.ReadConfig()
-            self.websites = self.ReadWebsites(cfg[0])
-            self.dics = self.ReadDics(cfg[1])
-            self.thread_num = int(cfg[2])
-            self.request_method = cfg[3]
+            j = json.load(open('config.json'))
+            self.cfg = {}
+            self.cfg['websites'] = self.ReadWebsites(j['websites'])
+            self.cfg['dics']       = self.ReadDics(j['dic_folder'])
+            self.cfg['request_method'] = j['request_method'].strip().upper()
+            self.cfg['thread_num']     = j['thread_num']
+            
         except Exception as e:
-            logging.error('mysql_select_error : %s'%(str(e)))
+            logging.error('Manager __init__ error: %s'%e)
 
     def logger_init(self):
         if False == os.path.exists('./log'):
@@ -32,56 +46,44 @@ class Manager(object):
 
     def Start(self):
         try:
-            for site in self.websites:
-                w = Worker(site,self.dics,self.thread_num,self.request_method)
+            for site in self.cfg['websites']:
+                w = Worker(site, self.cfg)
                 w.Start()
 
         except Exception as e:
-            logging.error('mysql_select_error : %s'%(str(e)))
-
-    def ReadConfig(self):
-        try:
-            fin = open('config.json','r')
-            fulltext = fin.read()
-            #print(fulltext)
-            js = json.loads(fulltext)
-            print(js)
-            fin.close( )
-            return [js["websites"] , js["dic_folder"] , js["thread_num"] , js["request_method"] ]
-        except Exception as e:
-            logging.error('ReadConfig error : %s'%(str(e)) )
-
+            logging.error('Manager Start error: %s'%e)
+    
     def ReadWebsites(self,webcfg):
         try:
-            fin = open(os.getcwd()+'/'+webcfg ,'r')
+            fin = open(webcfg ,'rb')
 
             websites = []
             while 1:
                 line = fin.readline()
                 if not line: break
 
-                site = line.replace('\n','').replace('\r','').strip()
-                if len(site)>=1:
+                site = line.strip()
+                if len(site)>=3 and site not in websites:
                     websites.append( site )
 
             fin.close()
-            #print(websites)
+            
             return websites
         except Exception as e:
-            logging.error('ReadWebsites error : %s'%(str(e)) )
-
+            logging.error('ReadWebsites error : %s'%e )
+    
     def ReadDics(self,diccfg):
         try:
             dics = []
-            doclist = os.listdir(os.getcwd() + '/'+diccfg)
+            doclist = os.listdir(diccfg)
             doclist.sort()
             for filename in doclist:
                 try:
-                    fin = open(os.getcwd() + '/'+diccfg+'/'+filename,'r')
+                    fin = open(diccfg+'/'+filename,'rb')
                     while 1:
                         line = fin.readline()
                         if not line:break
-                        record = line.replace('\n','').replace('\r','').strip()
+                        record = line.strip()
                         if len(record)>1:
                             dics.append(record)
 
@@ -89,10 +91,10 @@ class Manager(object):
 
                     return dics
                 except Exception as e:
-                    logging.error('dic error : %s , dicname:%s'%(str(e),filename) )
+                    logging.error('dic error : %s , dicname:%s'%(e, filename) )
 
         except Exception as e:
-            logging.error('ReadDics error : %s'%(str(e)) )
+            logging.error('ReadDics error : %s'%e )
 
 def main():
     w = Manager()
