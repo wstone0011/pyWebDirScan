@@ -1,6 +1,6 @@
 {
     "websites" : "websites.txt",
     "dic_folder" : "dic",
-    "request_method" : "HEAD",
+    "request_method" : "GET",
     "thread_num" : 16
 }
